@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container text-center">
+
+<div class="logo text-center mb-3">
+<img src="{% static 'images/logo1.png'%}" alt="Logo">
+</div>
+
+<hr>
+
+<h2 style="color:white;">Image Deepfake Detection</h2>
+
+<br>
+
+<form method="POST" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="upload-box">
+
+<input type="file" name="image" accept="image/*" required>
+
+<br><br>
+
+<button type="submit" class="btn btn-primary">
+Detect Image
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}
+
+
+{% block js_cripts %}
+
+<style>
+
+.upload-box{
+background:rgba(0,0,0,0.7);
+padding:40px;
+width:400px;
+margin:40px auto;
+border-radius:10px;
+box-shadow:0px 0px 10px #0ff;
+}
+
+input[type="file"]{
+color:white;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+}
+
+</style>
+
+{% endblock %}

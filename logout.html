@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Logged Out | Deepfake Detection</title>
+    <link rel="stylesheet" href="{% static 'css/logout.css' %}" />
+</head>
+<body>
+
+<div class="logout-container">
+    <div class="logout-card">
+        <h2>You are Successfully logged out</h2>
+        <p>Thank you for using the Deepfake Detection System.</p>
+        <a href="{% url 'ml_app:login' %}" class="btn">Login Again</a>
+    </div>
+</div>
+
+</body>
+</html>

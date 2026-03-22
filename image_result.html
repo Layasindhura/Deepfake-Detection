@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container text-center">
+
+<div class="logo text-center mb-3">
+<img src="{% static 'images/logo1.png'%}" alt="Logo">
+</div>
+
+<hr>
+
+<h3 style="color:white;">Image Deepfake Detection Result</h3>
+
+<br>
+
+<div class="result-box">
+
+<img src="/media/{{image}}" width="350" class="img-preview">
+
+<br><br>
+
+{% if result == "REAL" %}
+
+<h3>
+<span style="color:white">Result : </span>
+<span style="color:green">{{result}}</span>
+</h3>
+
+<img src="{% static 'images/thumpup.png'%}" height="100">
+
+{% else %}
+
+<h3>
+<span style="color:white">Result : </span>
+<span style="color:red">{{result}}</span>
+</h3>
+
+<img src="{% static 'images/thumpdown.png'%}" height="100">
+
+{% endif %}
+
+<br>
+
+<h3 style="color:white;">Model Performance</h3>
+
+<div id="chartArea">
+    <canvas id="resultChart"></canvas>
+</div>
+
+<h4 style="color:white">Prediction Confidence : {{confidence}} %</h4>
+<h4 style="color:white">Model Accuracy : {{model_accuracy}} %</h4>
+
+<br>
+
+<a href="{% url 'ml_app:image_detection' %}">
+<button class="btn btn-primary">Detect Another Image</button>
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block js_cripts %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+window.onload = function(){
+
+var confidence = parseFloat("{{confidence}}");
+var accuracy = parseFloat("{{model_accuracy}}");
+
+var ctx = document.getElementById("resultChart").getContext("2d");
+
+new Chart(ctx,{
+
+type:'bar',
+
+data:{
+labels:['Prediction Confidence','Model Accuracy'],
+
+datasets:[{
+label:'Performance (%)',
+data:[confidence,accuracy],
+
+backgroundColor:[
+'rgba(54,162,235,0.8)',
+'rgba(75,192,192,0.8)'
+]
+}]
+},
+
+options:{
+maintainAspectRatio:false,
+
+plugins:{
+legend:{
+labels:{color:'white'}
+}
+},
+
+scales:{
+x:{ticks:{color:'white'}},
+y:{
+ticks:{color:'white'},
+beginAtZero:true,
+max:100
+}
+}
+
+}
+
+});
+
+}
+
+</script>
+
+
+<style>
+
+.result-box{
+background:rgba(0,0,0,0.7);
+padding:40px;
+border-radius:10px;
+width:500px;
+margin:auto;
+}
+
+
+
+#chartArea{
+width:500px;
+height:300px;
+margin:40px auto;
+position:relative;
+}
+
+#resultChart{
+width:100% !important;
+height:100% !important;
+display:block;
+}
+
+
+.img-preview{
+border-radius:10px;
+box-shadow:0px 0px 10px #0ff;
+}
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if no_faces %}
+
+<div class="container">
+<div class="logo text-center mb-3">
+<img src="{% static 'images/logo1.png'%}">
+</div>
+
+<hr>
+
+<div class="alert alert-danger">
+No faces detected. Cannot process the video.
+</div>
+</div>
+
+{% else %}
+
+<div class="container">
+
+<div class="logo text-center mb-3">
+<img src="{% static 'images/logo1.png'%}">
+</div>
+
+<hr>
+
+<h3>Frames Split</h3>
+
+<div id="preprocessed_images" class="frame-scroll">
+{% for each_image in preprocessed_images %}
+<img src="{% static each_image %}" height="250">
+{% endfor %}
+</div>
+
+
+<h3>Face Cropped Frames</h3>
+
+<div id="faces_images" class="frame-scroll">
+{% for each_image in faces_cropped_images %}
+<img src="{% static each_image %}" height="150">
+{% endfor %}
+</div>
+
+
+<div class="result text-center">
+
+<h3>Play to see Result</h3>
+
+<div id="video-wrapper">
+
+<video height="320" width="640" id="predict-media" controls>
+<source src="{{MEDIA_URL}}{{original_video}}" type="video/mp4">
+</video>
+
+</div>
+
+<br>
+
+{% if output == "REAL" %}
+
+<h3>
+<span style="color:white">Result : </span>
+<span style="color:green">{{output}}</span>
+</h3>
+
+<img src="{% static 'images/thumpup.png'%}" height="100">
+
+
+{% else %}
+
+<h3>
+<span style="color:white">Result : </span>
+<span style="color:red">{{output}}</span>
+</h3>
+
+<img src="{% static 'images/thumpdown.png'%}" height="100">
+<h3 style="color:white;text-align:center;margin-top:40px;">
+Model Performance
+</h3>
+
+<div id="chartArea">
+    <canvas id="resultChart"></canvas>
+</div>
+
+<h4 style="color:white;text-align:center;">
+Prediction Confidence : {{confidence}} %
+</h4>
+
+<h4 style="color:white;text-align:center;">
+Model Accuracy : {{model_accuracy}} %
+</h4>
+
+{% endif %}
+
+
+
+</div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+
+{% block js_cripts %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/face-api.min.js' %}"></script>
+
+<script>
+
+window.onload = function(){
+
+/* -------- Chart -------- */
+
+let confidence = parseFloat("{{confidence}}");
+let accuracy = parseFloat("{{model_accuracy}}");
+
+const ctx = document.getElementById('resultChart').getContext('2d');
+
+new Chart(ctx,{
+type:'bar',
+
+data:{
+labels:['Prediction Confidence','Model Accuracy'],
+datasets:[{
+label:'Performance (%)',
+data:[confidence,accuracy],
+backgroundColor:[
+'rgba(54,162,235,0.8)',
+'rgba(75,192,192,0.8)'
+]
+}]
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false,
+
+plugins:{
+legend:{
+labels:{color:'white'}
+}
+},
+
+scales:{
+x:{
+ticks:{color:'white'}
+},
+y:{
+ticks:{color:'white'},
+beginAtZero:true,
+max:100
+}
+}
+
+}
+
+});
+
+
+/* -------- Face Detection -------- */
+
+const video=document.getElementById("predict-media");
+
+Promise.all([
+faceapi.nets.ssdMobilenetv1.loadFromUri('/static/json'),
+faceapi.nets.tinyFaceDetector.loadFromUri('/static/json')
+]);
+
+let faceCanvas;
+
+video.addEventListener("playing",()=>{
+
+if(!document.getElementById("faceCanvas")){
+
+faceCanvas = faceapi.createCanvasFromMedia(video);
+faceCanvas.id="faceCanvas";
+
+document.getElementById("video-wrapper").append(faceCanvas);
+
+}
+
+const displaySize={
+width:video.width,
+height:video.height
+};
+
+faceapi.matchDimensions(faceCanvas,displaySize);
+
+setInterval(async()=>{
+
+const detections=await faceapi.detectAllFaces(video);
+
+const resizedDetections=
+faceapi.resizeResults(detections,displaySize);
+
+faceCanvas.getContext("2d")
+.clearRect(0,0,faceCanvas.width,faceCanvas.height);
+
+resizedDetections.forEach((result,i)=>{
+
+let result_label="{{output}}";
+let conf="{{confidence}}";
+
+let drawOptions={
+label:result_label+" "+conf+"%"
+};
+
+if(result_label=="REAL"){
+drawOptions["boxColor"]="#0f0";
+}
+else{
+drawOptions["boxColor"]="#f00";
+}
+
+const drawBox=new faceapi.draw.DrawBox(resizedDetections[i].box,drawOptions);
+drawBox.draw(faceCanvas);
+
+});
+
+},100);
+
+});
+
+};
+
+</script>
+
+
+<style>
+
+#chartArea{
+width:500px;
+height:300px;
+margin:40px auto;
+position:relative;
+}
+
+#resultChart{
+width:100% !important;
+height:100% !important;
+display:block;
+}
+
+</style>
+
+{% endblock %}
