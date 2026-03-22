@@ -1,0 +1,6 @@
+to run project follow below steps
+
+1) double click on 'runServer.bat' file to start server
+2) now open browser and enter url as http://127.0.0.1:8000 and press enter key to get home page
+
+now upload video and get output
